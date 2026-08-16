@@ -4,7 +4,11 @@ import os from 'node:os'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 
 export const name = 'dsh-mc-companion'
-export const inject = ['tools', 'systemPrompt']
+// mcBot is a hard dependency: declaring it here makes Cordis defer this plugin's
+// apply until dsh-mc-launcher has provided the service, so ctx.mcBot is never
+// undefined at apply time (fixes a loader apply-order race that put the companion
+// into standby even though the launcher was present).
+export const inject = ['mcBot', 'tools', 'systemPrompt']
 
 const HOME = os.homedir()
 const DATA_DIR = path.join(HOME, '.dsh-mc')
@@ -83,8 +87,8 @@ function setMood(m) {
 
 export function apply(ctx) {
   const tools = ctx.tools
-  const mcBot = ctx.get('mcBot')           // OPTIONAL: undefined if launcher absent
-  const llm = ctx.get('llm')               // optional
+  const mcBot = ctx.mcBot                  // guaranteed by inject
+  const llm = ctx.get('llm')               // optional (LLM replies degrade to canned lines)
   const agentDefaultModel = ctx.get('agentDefaultModel') // optional
   loadMemory()
   if (!store.createdAt) { store.createdAt = new Date().toISOString(); saveMemory() }
@@ -387,18 +391,14 @@ export function apply(ctx) {
   })
   disposers.push(disposeContext)
 
-  if (mcBot) {
-    disposers.push(mcBot.setChatResponder(onChat))
-    disposers.push(mcBot.on('spawn', onSpawn))
-    disposers.push(mcBot.on('playerJoined', onPlayerJoined))
-    disposers.push(mcBot.on('death', onDeath))
-    disposers.push(mcBot.on('end', onEnd))
-    const proactiveTimer = setInterval(proactiveTick, 12000)
-    disposers.push(() => clearInterval(proactiveTimer))
-    log('已挂载 mcBot 服务，伙伴准备就绪')
-  } else {
-    log('未检测到 mcBot 服务（dsh-mc-launcher 未加载），伙伴处于待机状态')
-  }
+  disposers.push(mcBot.setChatResponder(onChat))
+  disposers.push(mcBot.on('spawn', onSpawn))
+  disposers.push(mcBot.on('playerJoined', onPlayerJoined))
+  disposers.push(mcBot.on('death', onDeath))
+  disposers.push(mcBot.on('end', onEnd))
+  const proactiveTimer = setInterval(proactiveTick, 12000)
+  disposers.push(() => clearInterval(proactiveTimer))
+  log('已挂载 mcBot 服务，伙伴准备就绪')
 
   ctx.effect(() => () => {
     disposers.forEach((d) => { try { d() } catch { /* ignore */ } })
