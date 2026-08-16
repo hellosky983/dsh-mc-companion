@@ -31,13 +31,13 @@ dsh-mc-launcher   提供 mcBot 服务（启动器 / bot 连接 / 移动 / 挖矿
         │
         └── ctx.provide('mcBot', ...)
                 │
-dsh-mc-companion  通过 ctx.get('mcBot') 拿到同一个 bot，接管"社交层"
+dsh-mc-companion  通过 inject: ['mcBot'] 拿到同一个 bot，接管"社交层"
 ```
 
 - `dsh-mc-launcher`：负责登录、下载、启动游戏、开局域网、连接 bot、移动/挖掘/自治等"身体"能力。
 - `dsh-mc-companion`：负责跟随、聊天、记忆、心情、主动关心这些"灵魂"能力。
 
-如果 `dsh-mc-launcher` 没加载（拿不到 `mcBot` 服务），companion 会**优雅降级**：不注册聊天接管、不启动定时器，所有 `mc_friend_*` 工具返回友好的错误提示，不会崩溃。
+`mcBot` 是 companion 的**硬依赖**（声明在 `inject` 里）：Cordis 会保证 `dsh-mc-launcher` 先提供 `mcBot` 服务、companion 再 apply，避免 loader 并发 apply 导致的顺序竞争。二者必须一起安装。
 
 ---
 
@@ -118,7 +118,7 @@ dsh-mc-companion  通过 ctx.get('mcBot') 拿到同一个 bot，接管"社交层
 
 ## 共享服务契约（mcBot）
 
-`dsh-mc-companion` 通过 `ctx.get('mcBot')` 使用以下方法（均为 soft 依赖，可缺省）：
+`dsh-mc-companion` 通过 `inject: ['mcBot']` 拿到 `ctx.mcBot`，使用以下方法：
 
 | 成员 | 类型 | 用途 |
 | --- | --- | --- |
