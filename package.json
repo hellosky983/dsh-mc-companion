@@ -1,0 +1,23 @@
+{
+  "name": "dsh-mc-companion",
+  "version": "0.1.0",
+  "description": "DSH Minecraft companion: a friendly AI buddy that plays Minecraft with you — follows you, chats like a friend, remembers your adventures.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": { "default": "./index.js" },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": ["index.js", "cordis.patch.yml", "README.md", "LICENSE", "NOTICE"],
+  "license": "MIT",
+  "keywords": ["dsh", "dsh-plugin", "deepseek-harness", "minecraft", "companion", "friend", "game"],
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-tools": "^0.1.0-rc.6"
+  },
+  "dependencies": {}
+}
