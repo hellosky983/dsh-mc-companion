@@ -18,26 +18,26 @@
 - 向主 DSH agent 注入一行伙伴状态（system prompt context），让 AI 知道伙伴正在陪玩；
 - 暴露一组 `mc_friend_*` 工具，供你在 DSH 聊天界面直接指挥伙伴。
 
-它**不负责**启动 Minecraft、下载版本、连接 bot 这些底层工作——那些由 `dsh-mc-launcher` 完成。
+它**不负责**启动 Minecraft、下载版本、连接 bot 这些底层工作——那些由 `dsh-mc-agent` 完成。
 
 ---
 
-## 与 dsh-mc-launcher 的关系
+## 与 dsh-mc-agent 的关系
 
-`dsh-mc-companion` **复用** `dsh-mc-launcher` 通过 Cordis 提供的共享服务 `mcBot`。二者要**一起安装**：
+`dsh-mc-companion` **复用** `dsh-mc-agent` 通过 Cordis 提供的共享服务 `mcBot`。二者要**一起安装**：
 
 ```
-dsh-mc-launcher   提供 mcBot 服务（启动器 / bot 连接 / 移动 / 挖矿 / 自治）
+dsh-mc-agent   提供 mcBot 服务（启动器 / bot 连接 / 移动 / 挖矿 / 自治）
         │
         └── ctx.provide('mcBot', ...)
                 │
 dsh-mc-companion  通过 inject: ['mcBot'] 拿到同一个 bot，接管"社交层"
 ```
 
-- `dsh-mc-launcher`：负责登录、下载、启动游戏、开局域网、连接 bot、移动/挖掘/自治等"身体"能力。
+- `dsh-mc-agent`：负责登录、下载、启动游戏、开局域网、连接 bot、移动/挖掘/自治等"身体"能力。
 - `dsh-mc-companion`：负责跟随、聊天、记忆、心情、主动关心这些"灵魂"能力。
 
-`mcBot` 是 companion 的**硬依赖**（声明在 `inject` 里）：Cordis 会保证 `dsh-mc-launcher` 先提供 `mcBot` 服务、companion 再 apply，避免 loader 并发 apply 导致的顺序竞争。二者必须一起安装。
+`mcBot` 是 companion 的**硬依赖**（声明在 `inject` 里）：Cordis 会保证 `dsh-mc-agent` 先提供 `mcBot` 服务、companion 再 apply，避免 loader 并发 apply 导致的顺序竞争。二者必须一起安装。
 
 ---
 
@@ -55,7 +55,7 @@ dsh-mc-companion  通过 inject: ['mcBot'] 拿到同一个 bot，接管"社交�
 
 ## 安装
 
-把它和 `dsh-mc-launcher` 一起 link 进你的 profile。
+把它和 `dsh-mc-agent` 一起 link 进你的 profile。
 
 1. 编辑你的 profile 的 `package.json`（例如 `/home/kevin/.dsh/profiles/web/package.json`）：
 
@@ -89,7 +89,7 @@ dsh-mc-companion  通过 inject: ['mcBot'] 拿到同一个 bot，接管"社交�
 
 ## 使用
 
-1. 在 DSH 里用 `dsh-mc-launcher` 的工具登录、下载、启动 Minecraft，并把世界**开放到局域网**（Open to LAN）。
+1. 在 DSH 里用 `dsh-mc-agent` 的工具登录、下载、启动 Minecraft，并把世界**开放到局域网**（Open to LAN）。
 2. bot 连接上世界后，`dsh-mc-companion` 会自动接管社交层：阿深会打招呼并开始跟随你。
 3. 在游戏聊天里直接说话（例如"阿深你叫什么""跟着我""你在哪"），他会回复。
 4. 在 DSH 聊天界面用工具指挥伙伴，例如：

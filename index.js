@@ -5,7 +5,7 @@ import { defineTool } from '@deepseek-ai/dsh-tools'
 
 export const name = 'dsh-mc-companion'
 // mcBot is a hard dependency: declaring it here makes Cordis defer this plugin's
-// apply until dsh-mc-launcher has provided the service, so ctx.mcBot is never
+// apply until dsh-mc-agent has provided the service, so ctx.mcBot is never
 // undefined at apply time (fixes a loader apply-order race that put the companion
 // into standby even though the launcher was present).
 export const inject = ['mcBot', 'tools', 'systemPrompt']
@@ -30,7 +30,7 @@ const store = {
 }
 
 const MOOD_CN = { happy: '开心', excited: '兴奋', calm: '平静', worried: '担心', curious: '好奇' }
-const NO_BOT_ERROR = 'dsh-mc-launcher 未加载——伙伴需要启动器插件提供 mcBot 服务'
+const NO_BOT_ERROR = 'dsh-mc-agent 未加载——伙伴需要启动器插件提供 mcBot 服务'
 const FALLBACK_REPLIES = ['嗯嗯，我在呢！', '收到，明白啦！', '我在呢，你说～', '好嘞！', '知道啦！']
 const PROACTIVE_LINES = ['玩得怎么样？', '要一起去挖矿吗？', '我就在你旁边呢～', '这边风景不错诶！', '需要帮忙就说一声～']
 
@@ -108,7 +108,7 @@ export function apply(ctx) {
         else if (chunk.type === 'reasoning-delta') reasoning += chunk.text
         else if (chunk.type === 'error' || chunk.type === 'aborted') break
       }
-      if (!text) { if (reasoning) return reasoning.slice(0, 120); return null }
+      if (!text) return null // reasoning-only response: never leak the model's thinking into game chat
       return text.trim() || null
     } catch (e) { return null }
   }
